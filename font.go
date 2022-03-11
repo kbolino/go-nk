@@ -23,6 +23,10 @@ const (
 
 type Font C.struct_nk_font
 
+func (f *Font) Handle() *UserFont {
+	return (*UserFont)(&f.handle)
+}
+
 type FontAtlas C.struct_nk_font_atlas
 
 func NewFontAtlas() *FontAtlas {
