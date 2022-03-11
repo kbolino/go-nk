@@ -67,7 +67,7 @@ const (
 	WindowRemoveROM      WindowFlags = C.NK_WINDOW_REMOVE_ROM
 )
 
-func (ctx *Context) Begin(title string, bounds *Rect, flags WindowFlags) bool {
+func (ctx *Context) Begin(title string, bounds *Rect, flags PanelFlags) bool {
 	rawTitle := C.CString(title)
 	defer C.free(unsafe.Pointer(rawTitle))
 	//nk_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
@@ -84,7 +84,7 @@ func (ctx *Context) Begin(title string, bounds *Rect, flags WindowFlags) bool {
 	))
 }
 
-func (ctx *Context) BeginTitled(name, title string, bounds *Rect, flags WindowFlags) bool {
+func (ctx *Context) BeginTitled(name, title string, bounds *Rect, flags PanelFlags) bool {
 	rawName := C.CString(name)
 	defer C.free(unsafe.Pointer(rawName))
 	rawTitle := C.CString(title)
