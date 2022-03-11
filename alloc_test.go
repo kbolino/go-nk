@@ -6,8 +6,16 @@ import (
 	"github.com/kbolino/go-nk"
 )
 
-func TestFixedAlloc(t *testing.T) {
+func TestInitFree(t *testing.T) {
 	var nkc nk.Context
-	nkc.InitFixed(10)
+	if err := nkc.InitDefault(); err != nil {
+		t.Fatal("unexpected error:", err)
+	}
 	defer nkc.Free() // should not panic
+}
+
+func TestBufferInitFree(t *testing.T) {
+	var buf nk.Buffer
+	buf.InitDefault()
+	defer buf.Free()
 }

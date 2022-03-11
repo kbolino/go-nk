@@ -14,13 +14,11 @@ type UserFont struct {
 
 type Context struct {
 	raw C.struct_nk_context
-	mem []byte // go reference to keep fixed memory alive
 }
 
-func (ctx *Context) InitFixed(memSize int) error {
-	ctx.mem = make([]byte, memSize)
-	// nk_bool nk_init_fixed(struct nk_context*, void *memory, nk_size size, const struct nk_user_font*);
-	if !C.nk_init_fixed(&ctx.raw, unsafe.Pointer(&ctx.mem[0]), C.nk_size(memSize), nil) {
+func (ctx *Context) InitDefault() error {
+	// nk_bool nk_init_default(struct nk_context*, const struct nk_user_font*);
+	if !C.nk_init_default(&ctx.raw, nil) {
 		return fmt.Errorf("nk_init_fixed returned false")
 	}
 	return nil
@@ -32,12 +30,8 @@ func (ctx *Context) Clear() {
 }
 
 func (ctx *Context) Free() {
-	if ctx.mem != nil {
-		ctx.mem = nil
-	} else {
-		// void nk_free(struct nk_context*);
-		C.nk_free(&ctx.raw)
-	}
+	// void nk_free(struct nk_context*);
+	C.nk_free(&ctx.raw)
 }
 
 func (ctx *Context) ForEach(f func(Command) bool) bool {
