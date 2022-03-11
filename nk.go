@@ -9,9 +9,7 @@ import (
 	"unsafe"
 )
 
-type UserFont struct {
-	raw C.struct_nk_user_font
-}
+type UserFont C.struct_nk_user_font
 
 type Context C.struct_nk_context
 
@@ -92,6 +90,10 @@ type Recti struct{ X, Y, W, H int16 }
 // typedef union {void *ptr; int id;} nk_handle;
 
 type Handle uintptr
+
+func (h Handle) raw() C.nk_handle {
+	return *(*C.nk_handle)(unsafe.Pointer(&h))
+}
 
 // struct nk_image {nk_handle handle; nk_ushort w, h; nk_ushort region[4];};
 
