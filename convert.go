@@ -1,9 +1,13 @@
 package nk
 
 // #include "nk.h"
+// #include <stdlib.h>
 import "C"
 
-import "unsafe"
+import (
+	"reflect"
+	"unsafe"
+)
 
 // enum nk_convert_result {
 //     NK_CONVERT_SUCCESS = 0,
@@ -57,9 +61,35 @@ type ConvertConfig struct {
 	ArcSegmentCount    uint32
 	CurveSegmentCount  uint32
 	Null               DrawNullTexture
-	VertexLayout       *DrawVertexLayoutElement
+	vertexLayout       unsafe.Pointer
 	VertexSize         uintptr
 	VertexAlignment    uintptr
+}
+
+func (c *ConvertConfig) FreeVertexLayout() {
+	if c.vertexLayout != nil {
+		C.free(c.vertexLayout)
+	}
+}
+
+func (c *ConvertConfig) SetVertexLayout(vertexLayout ...DrawVertexLayoutElement) {
+	length := len(vertexLayout) + 1
+	ptr := C.calloc(C.size_t(length), C.DVLE_SIZE)
+	c.vertexLayout = ptr
+	slice := fakeDVLESlice(ptr, length)
+	var i int
+	for i = 0; i < len(vertexLayout); i++ {
+		slice[i] = vertexLayout[i]
+	}
+	slice[i] = vertexLayoutEnd
+}
+
+func (c *ConvertConfig) VertexLayout() []DrawVertexLayoutElement {
+	if c.vertexLayout == nil {
+		return nil
+	}
+	length := int(C.find_vertex_layout_count((*C.struct_nk_draw_vertex_layout_element)(c.vertexLayout)))
+	return fakeDVLESlice(c.vertexLayout, length)
 }
 
 func (ctx *Context) Convert(cmds, vertices, elements *Buffer, config *ConvertConfig) error {
@@ -76,4 +106,13 @@ func (ctx *Context) Convert(cmds, vertices, elements *Buffer, config *ConvertCon
 		return ConvertError(result)
 	}
 	return nil
+}
+
+func fakeDVLESlice(ptr unsafe.Pointer, length int) []DrawVertexLayoutElement {
+	fakeSliceHeader := reflect.SliceHeader{
+		Data: uintptr(ptr),
+		Len:  length,
+		Cap:  length,
+	}
+	return *(*[]DrawVertexLayoutElement)(unsafe.Pointer(&fakeSliceHeader))
 }

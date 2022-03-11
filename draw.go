@@ -50,7 +50,7 @@ type DrawVertexLayoutElement struct {
 
 // #define NK_VERTEX_LAYOUT_END NK_VERTEX_ATTRIBUTE_COUNT,NK_FORMAT_COUNT,0
 
-var VertexLayoutEnd = DrawVertexLayoutElement{
+var vertexLayoutEnd = DrawVertexLayoutElement{
 	Attribute: VertexAttributeCount,
 	Format:    FormatCount,
 	Offset:    0,
