@@ -1,23 +1,33 @@
 package nk
 
 // #include "nk.h"
+// #include <stdlib.h>
 import "C"
 
-type Buffer struct {
-	raw C.struct_nk_buffer
-}
+import "unsafe"
 
-func (b *Buffer) InitDefault() {
+type Buffer C.struct_nk_buffer
+
+func NewBuffer() *Buffer {
+	ptr := (*C.struct_nk_buffer)(C.malloc(C.sizeof_struct_nk_buffer))
 	// void nk_buffer_init_default(struct nk_buffer*);
-	C.nk_buffer_init_default(&b.raw)
+	C.nk_buffer_init_default(ptr)
+	return (*Buffer)(ptr)
 }
 
 func (b *Buffer) Clear() {
 	// void nk_buffer_clear(struct nk_buffer*);
-	C.nk_buffer_clear(&b.raw)
+	C.nk_buffer_clear(b.raw())
 }
 
 func (b *Buffer) Free() {
-	// void nk_buffer_free(struct nk_buffer*)
-	C.nk_buffer_free(&b.raw)
+	if b != nil {
+		// void nk_buffer_free(struct nk_buffer*)
+		C.nk_buffer_free(b.raw())
+		C.free(unsafe.Pointer(b))
+	}
+}
+
+func (b *Buffer) raw() *C.struct_nk_buffer {
+	return (*C.struct_nk_buffer)(b)
 }

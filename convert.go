@@ -3,11 +3,7 @@ package nk
 // #include "nk.h"
 // #include <stdlib.h>
 import "C"
-
-import (
-	"reflect"
-	"unsafe"
-)
+import "unsafe"
 
 // enum nk_convert_result {
 //     NK_CONVERT_SUCCESS = 0,
@@ -54,7 +50,11 @@ func (e ConvertError) Error() string {
 //     nk_size vertex_alignment; /* vertex alignment: Can be obtained by NK_ALIGNOF */
 // };
 
-type ConvertConfig struct {
+// CConvertConfig is the direct analogue of nk_convert_config. However, because
+// nk_convert_config expects a C-style array of vertex layout elements, that
+// field is present but not exported in CConvertConfig to avoid allocation
+// issues. Instead, to create a "real" ConvertConfig, use ConvertConfigBuilder.
+type CConvertConfig struct {
 	GlobalAlpha        float32
 	LineAA, ShapeAA    AntiAliasing
 	CircleSegmentCount uint32
@@ -66,53 +66,60 @@ type ConvertConfig struct {
 	VertexAlignment    uintptr
 }
 
-func (c *ConvertConfig) FreeVertexLayout() {
-	if c.vertexLayout != nil {
-		C.free(c.vertexLayout)
+// ConvertConfigBuilder is used to build ConvertConfig values.
+// It adds a Go-style slice of DrawVertexLayoutElement values to CConvertConfig
+// so that the hidden C-style array can be filled in by Build.
+type ConvertConfigBuilder struct {
+	CConvertConfig
+	VertexLayout []DrawVertexLayoutElement
+}
+
+// Build builds a ConvertConfig from ccb. The resulting value must be released
+// by Free.
+func (ccb *ConvertConfigBuilder) Build() *ConvertConfig {
+	ptr := C.malloc(C.sizeof_struct_nk_convert_config)
+	raw := (*CConvertConfig)(unsafe.Pointer(ptr))
+	*raw = ccb.CConvertConfig
+	raw.vertexLayout = C.malloc(C.ulong(1+len(ccb.VertexLayout)) * C.sizeof_struct_nk_draw_vertex_layout_element)
+	for i := 0; i <= len(ccb.VertexLayout); i++ {
+		dvlePtr := unsafe.Pointer(uintptr(raw.vertexLayout) + uintptr(i)*C.sizeof_struct_nk_draw_vertex_layout_element)
+		dvleRaw := (*DrawVertexLayoutElement)(dvlePtr)
+		if i == len(ccb.VertexLayout) {
+			*dvleRaw = vertexLayoutEnd
+		} else {
+			*dvleRaw = ccb.VertexLayout[i]
+		}
+	}
+	return (*ConvertConfig)(ptr)
+}
+
+type ConvertConfig C.struct_nk_convert_config
+
+func (cnf *ConvertConfig) Free() {
+	if cnf != nil {
+		if cnf.vertex_layout != nil {
+			C.free(unsafe.Pointer(cnf.vertex_layout))
+		}
+		C.free(unsafe.Pointer(cnf))
 	}
 }
 
-func (c *ConvertConfig) SetVertexLayout(vertexLayout ...DrawVertexLayoutElement) {
-	length := len(vertexLayout) + 1
-	ptr := C.calloc(C.size_t(length), C.DVLE_SIZE)
-	c.vertexLayout = ptr
-	slice := fakeDVLESlice(ptr, length)
-	var i int
-	for i = 0; i < len(vertexLayout); i++ {
-		slice[i] = vertexLayout[i]
-	}
-	slice[i] = vertexLayoutEnd
-}
-
-func (c *ConvertConfig) VertexLayout() []DrawVertexLayoutElement {
-	if c.vertexLayout == nil {
-		return nil
-	}
-	length := int(C.find_vertex_layout_count((*C.struct_nk_draw_vertex_layout_element)(c.vertexLayout)))
-	return fakeDVLESlice(c.vertexLayout, length)
+func (cnf *ConvertConfig) raw() *C.struct_nk_convert_config {
+	return (*C.struct_nk_convert_config)(cnf)
 }
 
 func (ctx *Context) Convert(cmds, vertices, elements *Buffer, config *ConvertConfig) error {
 	// nk_flags nk_convert(struct nk_context*, struct nk_buffer *cmds, struct nk_buffer *vertices,
 	//     struct nk_buffer *elements, const struct nk_convert_config*);
 	result := C.nk_convert(
-		&ctx.raw,
-		&cmds.raw,
-		&vertices.raw,
-		&elements.raw,
-		(*C.struct_nk_convert_config)(unsafe.Pointer(config)),
+		ctx.raw(),
+		cmds.raw(),
+		vertices.raw(),
+		elements.raw(),
+		config.raw(),
 	)
 	if result != C.NK_CONVERT_SUCCESS {
 		return ConvertError(result)
 	}
 	return nil
-}
-
-func fakeDVLESlice(ptr unsafe.Pointer, length int) []DrawVertexLayoutElement {
-	fakeSliceHeader := reflect.SliceHeader{
-		Data: uintptr(ptr),
-		Len:  length,
-		Cap:  length,
-	}
-	return *(*[]DrawVertexLayoutElement)(unsafe.Pointer(&fakeSliceHeader))
 }

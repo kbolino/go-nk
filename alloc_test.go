@@ -7,15 +7,14 @@ import (
 )
 
 func TestInitFree(t *testing.T) {
-	var nkc nk.Context
-	if err := nkc.InitDefault(); err != nil {
+	nkc, err := nk.NewContext()
+	if err != nil {
 		t.Fatal("unexpected error:", err)
 	}
-	defer nkc.Free() // should not panic
+	nkc.Free() // should not panic
 }
 
 func TestBufferInitFree(t *testing.T) {
-	var buf nk.Buffer
-	buf.InitDefault()
-	defer buf.Free()
+	buf := nk.NewBuffer()
+	buf.Free()
 }

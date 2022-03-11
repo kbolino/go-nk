@@ -1,7 +1,10 @@
 package nk
 
 // #include "nk.h"
+// #include <stdlib.h>
 import "C"
+
+import "unsafe"
 
 // enum nk_panel_flags {
 //     NK_WINDOW_BORDER            = NK_FLAG(0),
@@ -65,10 +68,12 @@ const (
 )
 
 func (ctx *Context) Begin(title string, bounds *Rect, flags WindowFlags) bool {
+	rawTitle := C.CString(title)
+	defer C.free(unsafe.Pointer(rawTitle))
 	//nk_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 	return bool(C.nk_begin(
-		&ctx.raw,
-		C.CString(title),
+		ctx.raw(),
+		rawTitle,
 		C.nk_rect(
 			C.float(bounds.X),
 			C.float(bounds.Y),
@@ -80,11 +85,15 @@ func (ctx *Context) Begin(title string, bounds *Rect, flags WindowFlags) bool {
 }
 
 func (ctx *Context) BeginTitled(name, title string, bounds *Rect, flags WindowFlags) bool {
+	rawName := C.CString(name)
+	defer C.free(unsafe.Pointer(rawName))
+	rawTitle := C.CString(title)
+	defer C.free(unsafe.Pointer(rawTitle))
 	// nk_bool nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags)
 	return bool(C.nk_begin_titled(
-		&ctx.raw,
-		C.CString(name),
-		C.CString(title),
+		ctx.raw(),
+		rawName,
+		rawTitle,
 		C.nk_rect(
 			C.float(bounds.X),
 			C.float(bounds.Y),
@@ -97,5 +106,5 @@ func (ctx *Context) BeginTitled(name, title string, bounds *Rect, flags WindowFl
 
 func (ctx *Context) End() {
 	// void nk_end(struct nk_context *ctx);
-	C.nk_end(&ctx.raw)
+	C.nk_end(ctx.raw())
 }

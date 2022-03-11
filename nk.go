@@ -1,6 +1,7 @@
 package nk
 
 // #include "nk.h"
+// #include <stdlib.h>
 import "C"
 
 import (
@@ -12,32 +13,35 @@ type UserFont struct {
 	raw C.struct_nk_user_font
 }
 
-type Context struct {
-	raw C.struct_nk_context
-}
+type Context C.struct_nk_context
 
-func (ctx *Context) InitDefault() error {
+func NewContext() (*Context, error) {
+	ptr := (*C.struct_nk_context)(C.malloc(C.sizeof_struct_nk_context))
 	// nk_bool nk_init_default(struct nk_context*, const struct nk_user_font*);
-	if !C.nk_init_default(&ctx.raw, nil) {
-		return fmt.Errorf("nk_init_fixed returned false")
+	if !C.nk_init_default(ptr, nil) {
+		return nil, fmt.Errorf("nk_init_default returned false")
 	}
-	return nil
+	return (*Context)(ptr), nil
+
 }
 
 func (ctx *Context) Clear() {
 	// void nk_clear(struct nk_context*);
-	C.nk_clear(&ctx.raw)
+	C.nk_clear(ctx.raw())
 }
 
 func (ctx *Context) Free() {
-	// void nk_free(struct nk_context*);
-	C.nk_free(&ctx.raw)
+	if ctx != nil {
+		// void nk_free(struct nk_context*);
+		C.nk_free(ctx.raw())
+		C.free(unsafe.Pointer(ctx))
+	}
 }
 
 func (ctx *Context) ForEach(f func(Command) bool) bool {
 	// const struct nk_command* nk__begin(struct nk_context*);
 	// const struct nk_command* nk__next(struct nk_context*, const struct nk_command*);
-	for cmd := C.nk__begin(&ctx.raw); cmd != nil; cmd = C.nk__next(&ctx.raw, cmd) {
+	for cmd := C.nk__begin(ctx.raw()); cmd != nil; cmd = C.nk__next(ctx.raw(), cmd) {
 		if !f(typeSwitchCommand(cmd)) {
 			return false
 		}
@@ -46,16 +50,19 @@ func (ctx *Context) ForEach(f func(Command) bool) bool {
 }
 
 func (ctx *Context) DrawForEach(buf *Buffer, f func(cmd *DrawCommand) bool) bool {
-	rawBuf := (*C.struct_nk_buffer)(unsafe.Pointer(buf))
 	// const struct nk_draw_command* nk__draw_begin(const struct nk_context*, const struct nk_buffer*);
 	// const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*, const struct nk_buffer*, const struct nk_context*);
-	for cmd := C.nk__draw_begin(&ctx.raw, rawBuf); cmd != nil; cmd = C.nk__draw_next(cmd, rawBuf, &ctx.raw) {
+	for cmd := C.nk__draw_begin(ctx.raw(), buf.raw()); cmd != nil; cmd = C.nk__draw_next(cmd, buf.raw(), ctx.raw()) {
 		goCmd := (*DrawCommand)(unsafe.Pointer(cmd))
 		if !f(goCmd) {
 			return false
 		}
 	}
 	return true
+}
+
+func (ctx *Context) raw() *C.struct_nk_context {
+	return (*C.struct_nk_context)(ctx)
 }
 
 // struct nk_color {nk_byte r,g,b,a;};
