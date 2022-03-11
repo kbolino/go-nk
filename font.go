@@ -62,13 +62,12 @@ func (a *FontAtlas) AddFromFile(filePath string, height float32) (*Font, error) 
 	return font, nil
 }
 
-func (a *FontAtlas) Bake(widthIn, heightIn int32, format FontAtlasFormat) (image []byte, widthOut, heightOut int32) {
-	var width = C.int(widthIn)
-	var height = C.int(heightIn)
+func (a *FontAtlas) Bake(format FontAtlasFormat) (image []byte, width, height int32) {
+	var rawWidth, rawHeight C.int
 	// const void* nk_font_atlas_bake(struct nk_font_atlas*, int *width, int *height, enum nk_font_atlas_format);
-	imagePtr := C.nk_font_atlas_bake(a.raw(), &width, &height, C.enum_nk_font_atlas_format(format))
-	widthOut = int32(width)
-	heightOut = int32(height)
+	imagePtr := C.nk_font_atlas_bake(a.raw(), &rawWidth, &rawHeight, C.enum_nk_font_atlas_format(format))
+	width = int32(rawWidth)
+	height = int32(rawHeight)
 	if imagePtr == nil {
 		return
 	}
@@ -81,7 +80,7 @@ func (a *FontAtlas) Bake(widthIn, heightIn int32, format FontAtlasFormat) (image
 	default:
 		panic(fmt.Errorf("unsupported font atlas format %d", format))
 	}
-	dataSize := pixelSize * int(widthOut) * int(heightOut)
+	dataSize := pixelSize * int(width) * int(height)
 	image = fakeByteSlice((*byte)(imagePtr), dataSize)
 	return
 }
