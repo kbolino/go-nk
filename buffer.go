@@ -28,6 +28,18 @@ func (b *Buffer) Free() {
 	}
 }
 
+func (b *Buffer) Memory() []byte {
+	ptr, size := b.MemoryUnsafe()
+	return fakeByteSlice((*byte)(ptr), size)
+}
+
+func (b *Buffer) MemoryUnsafe() (ptr unsafe.Pointer, size int) {
+	var memoryStatus C.struct_nk_memory_status
+	// void nk_buffer_info(struct nk_memory_status*, struct nk_buffer*);
+	C.nk_buffer_info(&memoryStatus, b.raw())
+	return memoryStatus.memory, int(memoryStatus.size)
+}
+
 func (b *Buffer) raw() *C.struct_nk_buffer {
 	return (*C.struct_nk_buffer)(b)
 }
