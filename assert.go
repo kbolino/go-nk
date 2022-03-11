@@ -1,6 +1,7 @@
 package nk
 
 import "C"
+
 import "reflect"
 
 func init() {

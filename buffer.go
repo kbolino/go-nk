@@ -2,6 +2,7 @@ package nk
 
 // #include "nk.h"
 import "C"
+
 import "unsafe"
 
 type Buffer struct {
@@ -20,6 +21,9 @@ func (b *Buffer) Clear() {
 }
 
 func (b *Buffer) Free() {
-	C.nk_buffer_free(&b.raw)
-	b.mem = nil
+	if b.mem != nil {
+		b.mem = nil
+	} else {
+		C.nk_buffer_free(&b.raw)
+	}
 }
