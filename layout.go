@@ -68,3 +68,14 @@ func (ctx *Context) ButtonTextBytes(title []byte) bool {
 	// NK_API nk_bool nk_button_text(struct nk_context*, const char *title, int len);
 	return bool(C.nk_button_text(ctx.raw(), (*C.char)(unsafe.Pointer(&title[0])), C.int(len(title))))
 }
+
+func (ctx *Context) CheckText(text string, active bool) bool {
+	str := C.CString(text)
+	defer C.free(unsafe.Pointer(str))
+	// nk_check_text(struct nk_context *ctx, const char *text, int len, nk_bool active)
+	return bool(C.nk_check_text(ctx.raw(), str, C.int(len(text)), C.nk_bool(active)))
+}
+
+func (ctx *Context) CheckTextBytes(text []byte, active bool) bool {
+	return bool(C.nk_check_text(ctx.raw(), (*C.char)(unsafe.Pointer(&text[0])), C.int(len(text)), C.nk_bool(active)))
+}
