@@ -9,7 +9,7 @@ type AntiAliasing uint32
 
 const (
 	AntiAliasingOff AntiAliasing = C.NK_ANTI_ALIASING_OFF
-	AnriAliasingOn  AntiAliasing = C.NK_ANTI_ALIASING_ON
+	AntiAliasingOn  AntiAliasing = C.NK_ANTI_ALIASING_ON
 )
 
 // enum nk_draw_list_stroke {
