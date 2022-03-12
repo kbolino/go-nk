@@ -3,6 +3,8 @@ package nk
 // #include "nk.h"
 import "C"
 
+// Button represents all of the button input events that are meaningful to
+// Nuklear.
 type Button int32
 
 const (

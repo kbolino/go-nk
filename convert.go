@@ -13,6 +13,7 @@ import "unsafe"
 //     NK_CONVERT_ELEMENT_BUFFER_FULL = NK_FLAG(3)
 // };
 
+// ConvertError is any non-successful result from Context.Convert.
 type ConvertError uint32
 
 const (
@@ -55,15 +56,15 @@ func (e ConvertError) Error() string {
 // field is present but not exported in CConvertConfig to avoid allocation
 // issues. Instead, to create a "real" ConvertConfig, use ConvertConfigBuilder.
 type CConvertConfig struct {
-	GlobalAlpha        float32
-	LineAA, ShapeAA    AntiAliasing
-	CircleSegmentCount uint32
-	ArcSegmentCount    uint32
-	CurveSegmentCount  uint32
-	Null               DrawNullTexture
-	vertexLayout       unsafe.Pointer
-	VertexSize         uintptr
-	VertexAlignment    uintptr
+	GlobalAlpha        float32         // Global alpha value
+	LineAA, ShapeAA    AntiAliasing    // Antialiasing options
+	CircleSegmentCount uint32          // Number of segments used to draw circles (default 22)
+	ArcSegmentCount    uint32          // Number of segments used to draw arcs (default 22)
+	CurveSegmentCount  uint32          // Number of segments used to draw curves (default 22)
+	Null               DrawNullTexture // Null texture, used for drawing pixels
+	vertexLayout       unsafe.Pointer  // Filled in by builder from the Go slice
+	VertexSize         uintptr         // Size of each vertex
+	VertexAlignment    uintptr         // Alignment of the vertex type
 }
 
 // ConvertConfigBuilder is used to build ConvertConfig values.
@@ -71,11 +72,13 @@ type CConvertConfig struct {
 // so that the hidden C-style array can be filled in by Build.
 type ConvertConfigBuilder struct {
 	CConvertConfig
-	VertexLayout []DrawVertexLayoutElement
+	VertexLayout []DrawVertexLayoutElement // Describes the vertex elements and their packing
 }
 
 // Build builds a ConvertConfig from ccb. The resulting value must be released
-// by Free.
+// by Free. Due to cgo limits, the VertexLayout slice is converted to a C array,
+// which involves copying. Thus, it is best to create a ConvertConfig once and
+// reuse it as long as it doesn't change.
 func (ccb *ConvertConfigBuilder) Build() *ConvertConfig {
 	ptr := C.malloc(C.sizeof_struct_nk_convert_config)
 	raw := (*CConvertConfig)(unsafe.Pointer(ptr))
@@ -93,8 +96,12 @@ func (ccb *ConvertConfigBuilder) Build() *ConvertConfig {
 	return (*ConvertConfig)(ptr)
 }
 
+// ConvertConfig is the opaque configuration for the Context.Convert method. To
+// create such a value, use ConvertConfigBuilder.
 type ConvertConfig C.struct_nk_convert_config
 
+// Free releases memory used by cnf. Free is nil-safe. After this call, if cnf
+// was not nil, it is now a dangling pointer.
 func (cnf *ConvertConfig) Free() {
 	if cnf != nil {
 		if cnf.vertex_layout != nil {
@@ -108,6 +115,12 @@ func (cnf *ConvertConfig) raw() *C.struct_nk_convert_config {
 	return (*C.struct_nk_convert_config)(cnf)
 }
 
+// Convert calls nk_convert which converts the queued commands to draw commands
+// operating on vertex buffers. The three supplied buffers are used to store
+// the commands, the vertices (including positions, colors, and texcoords), and
+// the indices into the vertices for each command, respectively. Convert
+// operates according to the supplied configuration. None of the parameters
+// can be nil.
 func (ctx *Context) Convert(cmds, vertices, elements *Buffer, config *ConvertConfig) error {
 	// nk_flags nk_convert(struct nk_context*, struct nk_buffer *cmds, struct nk_buffer *vertices,
 	//     struct nk_buffer *elements, const struct nk_convert_config*);

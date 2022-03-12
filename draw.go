@@ -5,6 +5,7 @@ import "C"
 
 // enum nk_anti_aliasing {NK_ANTI_ALIASING_OFF, NK_ANTI_ALIASING_ON};
 
+// AntiAliasing specifies whether anti-aliasing is desired.
 type AntiAliasing uint32
 
 const (
@@ -19,6 +20,8 @@ const (
 //     /* build up path has a connection back to the beginning */
 // };
 
+// DrawListStroke specifies whether drawn paths should be connected back to the
+// beginning node (closed) or not (open).
 type DrawListStroke uint32
 
 const (
@@ -31,6 +34,9 @@ const (
 //     struct nk_vec2 uv; /* coordinates to a white pixel in the texture  */
 // };
 
+// DrawNullTexture represents a texture which contains a white pixel at
+// coordinates UV, useful for drawing individual pixels. If using baked fonts,
+// this can be obtained from FontAtlas.End.
 type DrawNullTexture struct {
 	Texture Handle
 	UV      Vec2
@@ -42,6 +48,8 @@ type DrawNullTexture struct {
 //     nk_size offset;
 // };
 
+// DrawVertexLayoutElement specifies the format and offset of a vertex element
+// within the vertex buffer that is produced by Context.Convert.
 type DrawVertexLayoutElement struct {
 	Attribute DrawVertexLayoutAttribute
 	Format    DrawVertexLayoutFormat
@@ -63,6 +71,8 @@ var vertexLayoutEnd = DrawVertexLayoutElement{
 //     NK_VERTEX_ATTRIBUTE_COUNT
 // };
 
+// DrawVertexLayoutAttribute specifies which attribute of a vertex is being
+// defined by a DrawVertexLayoutElement.
 type DrawVertexLayoutAttribute uint32
 
 const (
@@ -100,6 +110,8 @@ const (
 //     NK_FORMAT_COUNT
 // };
 
+// DrawVertexLayoutFormat specifies the data type and format of a vertex
+// element within DrawVertexLayoutElement.
 type DrawVertexLayoutFormat uint32
 
 const (
@@ -145,6 +157,8 @@ const (
 // #endif
 // };
 
+// DrawCommand represents a single draw command as produced by
+// Context.DrawForEach.
 type DrawCommand struct {
 	ElemCount uint32
 	ClipRect  Rect
@@ -176,19 +190,20 @@ type DrawCommand struct {
 // #endif
 // };
 
-type DrawList struct {
-	ClipRect     Rect
-	CircleVtx    [12]Vec2
-	Config       ConvertConfig
-	Buffer       *Buffer
-	Vertices     *Buffer
-	Elements     *Buffer
-	ElementCount uint32
-	VertexCount  uint32
-	CommandCount uint32
-	CmdOffset    uintptr
-	PathCount    uint32
-	PathOffset   uint32
-	LineAA       AntiAliasing
-	ShapeAA      AntiAliasing
-}
+// TODO figure out how this is actually used/useful
+// type DrawList struct {
+// 	ClipRect     Rect
+// 	CircleVtx    [12]Vec2
+// 	Config       *ConvertConfig
+// 	Buffer       *Buffer
+// 	Vertices     *Buffer
+// 	Elements     *Buffer
+// 	ElementCount uint32
+// 	VertexCount  uint32
+// 	CommandCount uint32
+// 	CmdOffset    uintptr
+// 	PathCount    uint32
+// 	PathOffset   uint32
+// 	LineAA       AntiAliasing
+// 	ShapeAA      AntiAliasing
+// }

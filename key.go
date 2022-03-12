@@ -3,6 +3,7 @@ package nk
 // #include "nk.h"
 import "C"
 
+// Key represents all key input types that are meaningful to Nuklear.
 type Key int32
 
 const (
