@@ -25,6 +25,7 @@ const (
 // Font is an opaque handle to a font in a font atlas.
 type Font C.struct_nk_font
 
+// Handle returns the UserFont handle for f.
 func (f *Font) Handle() *UserFont {
 	return (*UserFont)(&f.handle)
 }
