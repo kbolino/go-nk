@@ -30,7 +30,7 @@ func (b *Buffer) Free() {
 
 func (b *Buffer) Memory() []byte {
 	ptr, size := b.MemoryUnsafe()
-	return fakeByteSlice((*byte)(ptr), size)
+	return fakeByteSlice(ptr, size)
 }
 
 func (b *Buffer) MemoryUnsafe() (ptr unsafe.Pointer, size int) {

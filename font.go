@@ -85,7 +85,7 @@ func (a *FontAtlas) Bake(format FontAtlasFormat) (image []byte, width, height in
 		panic(fmt.Errorf("unsupported font atlas format %d", format))
 	}
 	dataSize := pixelSize * int(width) * int(height)
-	image = fakeByteSlice((*byte)(imagePtr), dataSize)
+	image = fakeByteSlice(imagePtr, dataSize)
 	return
 }
 

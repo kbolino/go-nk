@@ -5,7 +5,6 @@ import "C"
 
 import (
 	"fmt"
-	"reflect"
 	"unsafe"
 )
 
@@ -267,7 +266,7 @@ type CommandPolygon struct {
 }
 
 func (p *CommandPolygon) Points() []Vec2i {
-	return fakePointsSlice(&p.FirstPoint, int(p.PointCount))
+	return fakePointsSlice(unsafe.Pointer(&p.FirstPoint), int(p.PointCount))
 }
 
 // struct nk_command_polygon_filled {
@@ -285,7 +284,7 @@ type CommandPolygonFilled struct {
 }
 
 func (p *CommandPolygonFilled) Points() []Vec2i {
-	return fakePointsSlice(&p.FirstPoint, int(p.PointCount))
+	return fakePointsSlice(unsafe.Pointer(&p.FirstPoint), int(p.PointCount))
 }
 
 // struct nk_command_polyline {
@@ -305,7 +304,7 @@ type CommandPolyline struct {
 }
 
 func (p *CommandPolyline) Points() []Vec2i {
-	return fakePointsSlice(&p.FirstPoint, int(p.PointCoint))
+	return fakePointsSlice(unsafe.Pointer(&p.FirstPoint), int(p.PointCoint))
 }
 
 // struct nk_command_image {
@@ -349,7 +348,7 @@ type CommandText struct {
 }
 
 func (t *CommandText) Bytes() []byte {
-	return fakeByteSlice(&t.FirstByte, int(t.Length))
+	return fakeByteSlice(unsafe.Pointer(&t.FirstByte), int(t.Length))
 }
 
 func typeSwitchCommand(cmd *C.struct_nk_command) Command {
@@ -396,22 +395,4 @@ func typeSwitchCommand(cmd *C.struct_nk_command) Command {
 	default:
 		panic(fmt.Errorf("unsupported command type %d", cmd._type))
 	}
-}
-
-func fakePointsSlice(firstPoint *Vec2i, pointCount int) []Vec2i {
-	fakeSliceHeader := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(firstPoint)),
-		Len:  pointCount,
-		Cap:  pointCount,
-	}
-	return *(*[]Vec2i)(unsafe.Pointer(&fakeSliceHeader))
-}
-
-func fakeByteSlice(firstByte *byte, byteCount int) []byte {
-	fakeSliceHeader := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(&firstByte)),
-		Len:  byteCount,
-		Cap:  byteCount,
-	}
-	return *(*[]byte)(unsafe.Pointer(&fakeSliceHeader))
 }
