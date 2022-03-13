@@ -1,5 +1,14 @@
 # Change Log
 
+## v0.8.0 (2022-03-13)
+
+- Breaking API change: removed `Scale` and `SetScale` from `Font` as they
+  didn't seem to do anything
+- Breaking API change: added `config *FontConfig` parameter to
+  `FontAtlas.AddXXX` methods
+- Added `FontConfig` and `FontConfigBuilder` types to control how fonts are
+  baked
+
 ## v0.7.1 (2022-03-13)
 
 - Add `Scale` and `SetScale` to `Font` so that it can be scaled for high-DPI

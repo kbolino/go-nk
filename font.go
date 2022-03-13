@@ -25,16 +25,6 @@ const (
 // Font is an opaque handle to a font in a font atlas.
 type Font C.struct_nk_font
 
-// Scale returns the scale of f.
-func (f *Font) Scale() float32 {
-	return float32(f.scale)
-}
-
-// SetScale sets the scale of f.
-func (f *Font) SetScale(scale float32) {
-	f.scale = C.float(scale)
-}
-
 // Handle returns the UserFont handle for f.
 func (f *Font) Handle() *UserFont {
 	return (*UserFont)(&f.handle)
@@ -72,22 +62,24 @@ func (a *FontAtlas) Begin() {
 }
 
 // AddDefaultFont calls nk_font_atlas_add_default which adds the default font
-// to a and returns a pointer to it.
-func (a *FontAtlas) AddDefaultFont(height float32) *Font {
+// to a and returns a pointer to it. The config parameter may be nil.
+func (a *FontAtlas) AddDefaultFont(height float32, config *FontConfig) *Font {
 	// struct nk_font* nk_font_atlas_add_default(struct nk_font_atlas*, float height, const struct nk_font_config*);
-	return (*Font)(C.nk_font_atlas_add_default(a.raw(), C.float(height), nil))
+	return (*Font)(C.nk_font_atlas_add_default(a.raw(), C.float(height), (*C.struct_nk_font_config)(config)))
 }
 
 // AddFromFile calls nk_font_atlas_add_from_file which adds a TTF font from the
 // file at the given path. This function uses the C standard library for I/O,
 // and moreover has very limited error handling; it either succeeds and returns
-// a non-nil error, or fails with a generic error message.
-func (a *FontAtlas) AddFromFile(filePath string, height float32) (*Font, error) {
+// a non-nil error, or fails with a generic error message. The config parameter
+// may be nil.
+func (a *FontAtlas) AddFromFile(filePath string, height float32, config *FontConfig) (*Font, error) {
 	rawFilePath := C.CString(filePath)
 	defer C.free(unsafe.Pointer(rawFilePath))
 	// struct nk_font* nk_font_atlas_add_from_file(struct nk_font_atlas *atlas, const char *file_path,
 	//     float height, const struct nk_font_config*);
-	font := (*Font)(C.nk_font_atlas_add_from_file(a.raw(), rawFilePath, C.float(height), nil))
+	font := (*Font)(C.nk_font_atlas_add_from_file(a.raw(), rawFilePath, C.float(height),
+		(*C.struct_nk_font_config)(config)))
 	if font == nil {
 		return nil, fmt.Errorf("error loading font")
 	}
@@ -148,4 +140,90 @@ func (a *FontAtlas) Cleanup() {
 
 func (a *FontAtlas) raw() *C.struct_nk_font_atlas {
 	return (*C.struct_nk_font_atlas)(a)
+}
+
+// struct nk_font_config {
+//     struct nk_font_config *next;
+//     /* NOTE: only used internally */
+//     void *ttf_blob;
+//     /* pointer to loaded TTF file memory block.
+//      * NOTE: not needed for nk_font_atlas_add_from_memory and nk_font_atlas_add_from_file. */
+//     nk_size ttf_size;
+//     /* size of the loaded TTF file memory block
+//      * NOTE: not needed for nk_font_atlas_add_from_memory and nk_font_atlas_add_from_file. */
+//
+//     unsigned char ttf_data_owned_by_atlas;
+//     /* used inside font atlas: default to: 0*/
+//     unsigned char merge_mode;
+//     /* merges this font into the last font */
+//     unsigned char pixel_snap;
+//     /* align every character to pixel boundary (if true set oversample (1,1)) */
+//     unsigned char oversample_v, oversample_h;
+//     /* rasterize at high quality for sub-pixel position */
+//     unsigned char padding[3];
+//
+//     float size;
+//     /* baked pixel height of the font */
+//     enum nk_font_coord_type coord_type;
+//     /* texture coordinate format with either pixel or UV coordinates */
+//     struct nk_vec2 spacing;
+//     /* extra pixel spacing between glyphs  */
+//     const nk_rune *range;
+//     /* list of unicode ranges (2 values per range, zero terminated) */
+//     struct nk_baked_font *font;
+//     /* font to setup in the baking process: NOTE: not needed for font atlas */
+//     nk_rune fallback_glyph;
+//     /* fallback glyph to use if a given rune is not found */
+//     struct nk_font_config *n;
+//     struct nk_font_config *p;
+// };
+
+// FontConfig is an opaque handle to the configuration for loading a font.
+// To create a FontConfig, use FontConfigBuilder. FontConfig is stored in C
+// memory which must be released by Free.
+type FontConfig C.struct_nk_font_config
+
+// Free releases the memory used by fc, including fc itself. Free is nil-safe.
+// After the call, if fc was not nil, it is now a dangling pointer.
+func (fc *FontConfig) Free() {
+	if fc != nil {
+		C.free(unsafe.Pointer(fc))
+	}
+}
+
+// FontConfigBuilder is used to construct FontConfig values.
+type FontConfigBuilder struct {
+	// MergeMode specifies whether this font should be merged into the previous
+	// font when baking.
+	MergeMode bool
+	// PixelSnap specifies whether every character of this font should be
+	// aligned at a pixel boundary. If set to true, then oversampling should
+	// be set to (1, 1).
+	PixelSnap bool
+	// OversampleH and OversampleV are the degrees to which the font should be
+	// oversampled (rendered above its nominal resolution) in the horizontal
+	// and vertical directions, respectively. Oversampling is useful to obtain
+	// subpixel resolution and for high-DPI rendering.
+	OversampleH, OversampleV uint8
+}
+
+// Build creates a new FontConfig from the state of fcb. The resulting value is
+// stored in C memory and must be freed after use.
+func (fcb *FontConfigBuilder) Build() *FontConfig {
+	raw := (*C.struct_nk_font_config)(C.malloc(C.sizeof_struct_nk_font_config))
+	mergeMode := C.nk_false
+	if fcb.MergeMode {
+		mergeMode = C.nk_true
+	}
+	pixelSnap := C.nk_false
+	if fcb.PixelSnap {
+		pixelSnap = C.nk_true
+	}
+	*raw = C.struct_nk_font_config{
+		merge_mode:   C.uchar(mergeMode),
+		pixel_snap:   C.uchar(pixelSnap),
+		oversample_h: C.uchar(fcb.OversampleH),
+		oversample_v: C.uchar(fcb.OversampleV),
+	}
+	return (*FontConfig)(raw)
 }
