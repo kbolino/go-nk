@@ -51,49 +51,47 @@ func (e ConvertError) Error() string {
 //     nk_size vertex_alignment; /* vertex alignment: Can be obtained by NK_ALIGNOF */
 // };
 
-// CConvertConfig is the direct analogue of nk_convert_config. However, because
-// nk_convert_config expects a C-style array of vertex layout elements, that
-// field is present but not exported in CConvertConfig to avoid allocation
-// issues. Instead, to create a "real" ConvertConfig, use ConvertConfigBuilder.
-type CConvertConfig struct {
-	GlobalAlpha        float32         // Global alpha value
-	LineAA, ShapeAA    AntiAliasing    // Antialiasing options
-	CircleSegmentCount uint32          // Number of segments used to draw circles (default 22)
-	ArcSegmentCount    uint32          // Number of segments used to draw arcs (default 22)
-	CurveSegmentCount  uint32          // Number of segments used to draw curves (default 22)
-	Null               DrawNullTexture // Null texture, used for drawing pixels
-	vertexLayout       unsafe.Pointer  // Filled in by builder from the Go slice
-	VertexSize         uintptr         // Size of each vertex
-	VertexAlignment    uintptr         // Alignment of the vertex type
-}
-
-// ConvertConfigBuilder is used to build ConvertConfig values.
-// It adds a Go-style slice of DrawVertexLayoutElement values to CConvertConfig
-// so that the hidden C-style array can be filled in by Build.
+// ConvertConfigBuilder is used to construct ConvertConfig values.
 type ConvertConfigBuilder struct {
-	CConvertConfig
-	VertexLayout []DrawVertexLayoutElement // Describes the vertex elements and their packing
+	GlobalAlpha        float32                   // Global alpha value
+	LineAA, ShapeAA    AntiAliasing              // Antialiasing options for lines and shapes
+	CircleSegmentCount uint32                    // Number of segments used to draw circles (recommended 22)
+	ArcSegmentCount    uint32                    // Number of segments used to draw arcs (recommended 22)
+	CurveSegmentCount  uint32                    // Number of segments used to draw curves (recommended 22)
+	Null               DrawNullTexture           // Null texture, used for drawing pixels
+	VertexLayout       []DrawVertexLayoutElement // Describes the vertex elements and their packing
+	VertexSize         uint32                    // Size of each vertex
+	VertexAlignment    uint32                    // Alignment of the vertex type
 }
 
-// Build builds a ConvertConfig from ccb. The resulting value must be released
-// by Free. Due to cgo limits, the VertexLayout slice is converted to a C array,
-// which involves copying. Thus, it is best to create a ConvertConfig once and
-// reuse it as long as it doesn't change.
-func (ccb *ConvertConfigBuilder) Build() *ConvertConfig {
-	ptr := C.malloc(C.sizeof_struct_nk_convert_config)
-	raw := (*CConvertConfig)(unsafe.Pointer(ptr))
-	*raw = ccb.CConvertConfig
-	raw.vertexLayout = C.malloc(C.ulong(1+len(ccb.VertexLayout)) * C.sizeof_struct_nk_draw_vertex_layout_element)
+// Build builds a ConvertConfig from ccb. The resulting value is stored in C
+// memory and must be released by Free when no longer needed.
+func (ccb ConvertConfigBuilder) Build() *ConvertConfig {
+	raw := (*C.struct_nk_convert_config)(C.malloc(C.sizeof_struct_nk_convert_config))
+	*raw = C.struct_nk_convert_config{
+		global_alpha:         C.float(ccb.GlobalAlpha),
+		line_AA:              C.enum_nk_anti_aliasing(ccb.LineAA),
+		shape_AA:             C.enum_nk_anti_aliasing(ccb.ShapeAA),
+		circle_segment_count: C.uint(ccb.CircleSegmentCount),
+		arc_segment_count:    C.uint(ccb.ArcSegmentCount),
+		curve_segment_count:  C.uint(ccb.CurveSegmentCount),
+		null:                 *(*C.struct_nk_draw_null_texture)(unsafe.Pointer((&ccb.Null))),
+		vertex_layout:        nil,
+		vertex_size:          C.nk_size(ccb.VertexSize),
+		vertex_alignment:     C.nk_size(ccb.VertexAlignment),
+	}
+	raw.vertex_layout = (*C.struct_nk_draw_vertex_layout_element)(C.malloc(
+		C.ulong(1+len(ccb.VertexLayout)) * C.sizeof_struct_nk_draw_vertex_layout_element))
 	for i := 0; i <= len(ccb.VertexLayout); i++ {
-		dvlePtr := unsafe.Pointer(uintptr(raw.vertexLayout) + uintptr(i)*C.sizeof_struct_nk_draw_vertex_layout_element)
-		dvleRaw := (*DrawVertexLayoutElement)(dvlePtr)
+		elem := (*DrawVertexLayoutElement)(unsafe.Pointer(uintptr(unsafe.Pointer(raw.vertex_layout)) +
+			uintptr(i)*C.sizeof_struct_nk_draw_vertex_layout_element))
 		if i == len(ccb.VertexLayout) {
-			*dvleRaw = vertexLayoutEnd
+			*elem = vertexLayoutEnd
 		} else {
-			*dvleRaw = ccb.VertexLayout[i]
+			*elem = ccb.VertexLayout[i]
 		}
 	}
-	return (*ConvertConfig)(ptr)
+	return (*ConvertConfig)(raw)
 }
 
 // ConvertConfig is the opaque configuration for the Context.Convert method. To

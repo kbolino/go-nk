@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.9.0 (2022-03-13)
+
+- Breaking API change: Remodeled `ConvertConfigBuilder` to match the pattern
+  used by `FontConfigBuilder`: it now takes a value receiver and doesn't have
+  a nested `CConvertConfig`; `CConvertConfig` type is removed entirely
+- Added `CoordType` and `FallbackGlypth` to `FontConfigBuilder`
+
 ## v0.8.1 (2022-03-13)
 
 - Use value receiver on `FontConfigBuilder.Build` so that it can be called from

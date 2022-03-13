@@ -205,6 +205,11 @@ type FontConfigBuilder struct {
 	// and vertical directions, respectively. Oversampling is useful to obtain
 	// subpixel resolution and for high-DPI rendering.
 	OversampleH, OversampleV uint8
+	// CoordType is the kind of coordinates to use with the baked texture.
+	CoordType FontCoordType
+	// FallbackGlyph is the alternate code point to use when no glyph exists
+	// for another code point.
+	FallbackGlyph rune
 }
 
 // Build creates a new FontConfig from the state of fcb. The resulting value is
@@ -220,10 +225,20 @@ func (fcb FontConfigBuilder) Build() *FontConfig {
 		pixelSnap = C.nk_true
 	}
 	*raw = C.struct_nk_font_config{
-		merge_mode:   C.uchar(mergeMode),
-		pixel_snap:   C.uchar(pixelSnap),
-		oversample_h: C.uchar(fcb.OversampleH),
-		oversample_v: C.uchar(fcb.OversampleV),
+		merge_mode:     C.uchar(mergeMode),
+		pixel_snap:     C.uchar(pixelSnap),
+		oversample_h:   C.uchar(fcb.OversampleH),
+		oversample_v:   C.uchar(fcb.OversampleV),
+		coord_type:     C.enum_nk_font_coord_type(fcb.CoordType),
+		fallback_glyph: C.nk_rune(fcb.FallbackGlyph),
 	}
 	return (*FontConfig)(raw)
 }
+
+// FontCoordType specifies the type of coordinates to use for baked fonts.
+type FontCoordType uint32
+
+const (
+	CoordUV    FontCoordType = C.NK_COORD_UV    // UV coordinates, i.e. scaled from 0 to 1
+	CoordPixel FontCoordType = C.NK_COORD_PIXEL // absolute pixel coordinates
+)
