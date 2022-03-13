@@ -81,7 +81,7 @@ func (ccb ConvertConfigBuilder) Build() *ConvertConfig {
 		vertex_alignment:     C.nk_size(ccb.VertexAlignment),
 	}
 	raw.vertex_layout = (*C.struct_nk_draw_vertex_layout_element)(C.malloc(
-		C.ulong(1+len(ccb.VertexLayout)) * C.sizeof_struct_nk_draw_vertex_layout_element))
+		C.size_t(1+len(ccb.VertexLayout)) * C.sizeof_struct_nk_draw_vertex_layout_element))
 	for i := 0; i <= len(ccb.VertexLayout); i++ {
 		elem := (*DrawVertexLayoutElement)(unsafe.Pointer(uintptr(unsafe.Pointer(raw.vertex_layout)) +
 			uintptr(i)*C.sizeof_struct_nk_draw_vertex_layout_element))

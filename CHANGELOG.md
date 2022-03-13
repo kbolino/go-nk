@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.9.1 (2022-03-13)
+
+- Fixed type passed to `malloc` in `ConvertConfigBuilder.Build`
+
 ## v0.9.0 (2022-03-13)
 
 - Breaking API change: Remodeled `ConvertConfigBuilder` to match the pattern
