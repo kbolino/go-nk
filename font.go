@@ -25,6 +25,16 @@ const (
 // Font is an opaque handle to a font in a font atlas.
 type Font C.struct_nk_font
 
+// Scale returns the scale of f.
+func (f *Font) Scale() float32 {
+	return float32(f.scale)
+}
+
+// SetScale sets the scale of f.
+func (f *Font) SetScale(scale float32) {
+	f.scale = C.float(scale)
+}
+
 // Handle returns the UserFont handle for f.
 func (f *Font) Handle() *UserFont {
 	return (*UserFont)(&f.handle)

@@ -1,5 +1,10 @@
 # Change Log
 
+## v0.7.1 (2022-03-13)
+
+- Add `Scale` and `SetScale` to `Font` so that it can be scaled for high-DPI
+  displays
+
 ## v0.7.0 (2022-03-12)
 
 - Breaking API change: Set flag `NK_UINT_DRAW_INDEX` in `nk.h` to make
