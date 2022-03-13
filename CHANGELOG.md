@@ -1,5 +1,10 @@
 # Change Log
 
+## v0.8.1 (2022-03-13)
+
+- Use value receiver on `FontConfigBuilder.Build` so that it can be called from
+  inline builder value
+
 ## v0.8.0 (2022-03-13)
 
 - Breaking API change: removed `Scale` and `SetScale` from `Font` as they

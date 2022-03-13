@@ -209,7 +209,7 @@ type FontConfigBuilder struct {
 
 // Build creates a new FontConfig from the state of fcb. The resulting value is
 // stored in C memory and must be freed after use.
-func (fcb *FontConfigBuilder) Build() *FontConfig {
+func (fcb FontConfigBuilder) Build() *FontConfig {
 	raw := (*C.struct_nk_font_config)(C.malloc(C.sizeof_struct_nk_font_config))
 	mergeMode := C.nk_false
 	if fcb.MergeMode {
