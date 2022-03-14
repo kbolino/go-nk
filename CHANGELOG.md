@@ -1,12 +1,19 @@
 # Change Log
 
+## v0.10.0 (2022-03-14)
+
+- Breaking API change: removed all specialized `XXXFlags` types, made their
+  constants untyped, and replaced the types with generic `Flags` instead: this
+  more closely matches the C API and prevents flag type issues from arising
+  again like e.g. `PanelFlags` vs. `WindowFlags`
+
 ## v0.9.1 (2022-03-13)
 
 - Fixed type passed to `malloc` in `ConvertConfigBuilder.Build`
 
 ## v0.9.0 (2022-03-13)
 
-- Breaking API change: Remodeled `ConvertConfigBuilder` to match the pattern
+- Breaking API change: remodeled `ConvertConfigBuilder` to match the pattern
   used by `FontConfigBuilder`: it now takes a value receiver and doesn't have
   a nested `CConvertConfig`; `CConvertConfig` type is removed entirely
 - Added `CoordType` and `FallbackGlypth` to `FontConfigBuilder`
