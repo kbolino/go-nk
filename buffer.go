@@ -44,7 +44,7 @@ func (b *Buffer) Clear() {
 // it has been fully consumed, and then re-obtained for future use.
 func (b *Buffer) Memory() []byte {
 	ptr, size := b.MemoryUnsafe()
-	return fakeByteSlice(ptr, size)
+	return fakeSlice((*byte)(ptr), size)
 }
 
 // MemoryUnsafe is the less-safe version of Memory. It returns a pointer to the

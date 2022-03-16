@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.12.0 (2022-03-16)
+
+- Minimum required Go version is now 1.18
+- Added `HandlePtr` and `GetHandlePtr` generic functions to ergonomically and
+  safely use `Handle`s
+
 ## v0.11.0 (2022-03-16)
 
 - Breaking API change: The `XXXBytes` methods have been dropped. The maintenance

@@ -266,7 +266,7 @@ type CommandPolygon struct {
 }
 
 func (p *CommandPolygon) Points() []Vec2i {
-	return fakePointsSlice(unsafe.Pointer(&p.FirstPoint), int(p.PointCount))
+	return fakeSlice(&p.FirstPoint, int(p.PointCount))
 }
 
 // struct nk_command_polygon_filled {
@@ -284,7 +284,7 @@ type CommandPolygonFilled struct {
 }
 
 func (p *CommandPolygonFilled) Points() []Vec2i {
-	return fakePointsSlice(unsafe.Pointer(&p.FirstPoint), int(p.PointCount))
+	return fakeSlice(&p.FirstPoint, int(p.PointCount))
 }
 
 // struct nk_command_polyline {
@@ -304,7 +304,7 @@ type CommandPolyline struct {
 }
 
 func (p *CommandPolyline) Points() []Vec2i {
-	return fakePointsSlice(unsafe.Pointer(&p.FirstPoint), int(p.PointCoint))
+	return fakeSlice(&p.FirstPoint, int(p.PointCoint))
 }
 
 // struct nk_command_image {
@@ -348,7 +348,7 @@ type CommandText struct {
 }
 
 func (t *CommandText) Bytes() []byte {
-	return fakeByteSlice(unsafe.Pointer(&t.FirstByte), int(t.Length))
+	return fakeSlice(&t.FirstByte, int(t.Length))
 }
 
 func typeSwitchCommand(cmd *C.struct_nk_command) Command {

@@ -50,6 +50,7 @@ import "C"
 
 import (
 	"fmt"
+	"runtime/cgo"
 	"unsafe"
 )
 
@@ -131,6 +132,28 @@ func (ctx *Context) raw() *C.struct_nk_context {
 	return (*C.struct_nk_context)(ctx)
 }
 
+// typedef union {void *ptr; int id;} nk_handle;
+
+// Handle is used for opaque-to-nuklear references to externally created and
+// managed resources, such as textures. To obtain a handle from a Go pointer
+// that can be safely passed through C calls, use HandlePtr.
+type Handle uintptr
+
+// HandlePtr wraps ptr in a cgo-safe handle.
+func HandlePtr[T any](ptr *T) Handle {
+	return Handle(cgo.NewHandle(ptr))
+}
+
+// GetHandlePtr retrieves the pointer stored in the cgo-safe handle h. If h was
+// not obtained from HandlePtr, GetHandlePtr may panic.
+func GetHandlePtr[T any](h Handle) *T {
+	return cgo.Handle(h).Value().(*T)
+}
+
+func (h Handle) raw() C.nk_handle {
+	return *(*C.nk_handle)(unsafe.Pointer(&h))
+}
+
 // struct nk_color {nk_byte r,g,b,a;};
 
 type Color struct{ R, G, B, A uint8 }
@@ -154,14 +177,6 @@ type Rect struct{ X, Y, W, H float32 }
 // struct nk_recti {short x,y,w,h;};
 
 type Recti struct{ X, Y, W, H int16 }
-
-// typedef union {void *ptr; int id;} nk_handle;
-
-type Handle uintptr
-
-func (h Handle) raw() C.nk_handle {
-	return *(*C.nk_handle)(unsafe.Pointer(&h))
-}
 
 // struct nk_image {nk_handle handle; nk_ushort w, h; nk_ushort region[4];};
 

@@ -5,20 +5,11 @@ import (
 	"unsafe"
 )
 
-func fakeByteSlice(ptr unsafe.Pointer, length int) []byte {
+func fakeSlice[T any](ptr *T, length int) []T {
 	fakeSliceHeader := reflect.SliceHeader{
-		Data: uintptr(ptr),
+		Data: uintptr(unsafe.Pointer(ptr)),
 		Len:  length,
 		Cap:  length,
 	}
-	return *(*[]byte)(unsafe.Pointer(&fakeSliceHeader))
-}
-
-func fakePointsSlice(ptr unsafe.Pointer, length int) []Vec2i {
-	fakeSliceHeader := reflect.SliceHeader{
-		Data: uintptr(ptr),
-		Len:  length,
-		Cap:  length,
-	}
-	return *(*[]Vec2i)(unsafe.Pointer(&fakeSliceHeader))
+	return *(*[]T)(unsafe.Pointer(&fakeSliceHeader))
 }
