@@ -25,6 +25,17 @@ const (
 // Font is an opaque handle to a font in a font atlas.
 type Font C.struct_nk_font
 
+// ScaleHeight re-scales the font according to scale. This can be useful for
+// rendering at high DPI. For effective use, first multiply the font size by
+// scale when calling AddXXX method, then ScaleHeight on the resulting Font,
+// then Bake the font(s). Values larger than 1 will make the font appear smaller
+// but crisper, values between 0 and 1 will make the font appear larger but
+// blurrier.
+func (f *Font) ScaleHeight(scale float32) {
+	// see discussion at https://github.com/Immediate-Mode-UI/Nuklear/pull/427
+	f.handle.height /= C.float(scale)
+}
+
 // Handle returns the UserFont handle for f.
 func (f *Font) Handle() *UserFont {
 	return (*UserFont)(&f.handle)

@@ -1,5 +1,14 @@
 # Change Log
 
+## v0.11.0 (2022-03-16)
+
+- Breaking API change: The `XXXBytes` methods have been dropped. The maintenance
+  burden is no longer worth the benefit now that string pooling is possible.
+- Added `ScaleHeight` method on `Font`, which does what the old `SetScale` meant
+  to do. See [this Nuklear PR][nk-pr-427] for details.
+
+[nk-pr-427]: https://github.com/Immediate-Mode-UI/Nuklear/pull/427
+
 ## v0.10.1 (2022-03-16)
 
 - New feature: C-style strings can be pooled using the new `CStringPool`
