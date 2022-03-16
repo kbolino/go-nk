@@ -4,11 +4,9 @@ package nk
 // #include <stdlib.h>
 import "C"
 
-import "unsafe"
-
 func (ctx *Context) Begin(title string, bounds *Rect, flags Flags) bool {
-	rawTitle := C.CString(title)
-	defer C.free(unsafe.Pointer(rawTitle))
+	rawTitle := cStringPool.Get(title)
+	defer cStringPool.Release(rawTitle)
 	//nk_bool nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bounds, nk_flags flags);
 	return bool(C.nk_begin(
 		ctx.raw(),
@@ -24,10 +22,10 @@ func (ctx *Context) Begin(title string, bounds *Rect, flags Flags) bool {
 }
 
 func (ctx *Context) BeginTitled(name, title string, bounds *Rect, flags Flags) bool {
-	rawName := C.CString(name)
-	defer C.free(unsafe.Pointer(rawName))
-	rawTitle := C.CString(title)
-	defer C.free(unsafe.Pointer(rawTitle))
+	rawName := cStringPool.Get(name)
+	defer cStringPool.Release(rawName)
+	rawTitle := cStringPool.Get(title)
+	defer cStringPool.Release(rawTitle)
 	// nk_bool nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags)
 	return bool(C.nk_begin_titled(
 		ctx.raw(),

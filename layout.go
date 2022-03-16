@@ -55,8 +55,8 @@ func (ctx *Context) LayoutRowStatic(height float32, itemWidth, cols int32) {
 // current row. The label is copied into C memory and freed at the end of
 // the call. Alignment is set according to align.
 func (ctx *Context) Text(label string, align TextAlign) {
-	str := C.CString(label)
-	defer C.free(unsafe.Pointer(str))
+	str := cStringPool.Get(label)
+	defer cStringPool.Release(str)
 	// void nk_text(struct nk_context*, const char*, int, nk_flags);
 	C.nk_text(ctx.raw(), str, C.int(len(label)), C.nk_flags(align))
 }
@@ -71,8 +71,8 @@ func (ctx *Context) TextBytes(label []byte, align TextAlign) {
 // column of the current row. The title is copied into C memory that's freed at
 // the end of the call. ButtonText returns true if the button was clicked.
 func (ctx *Context) ButtonText(title string) bool {
-	str := C.CString(title)
-	defer C.free(unsafe.Pointer(str))
+	str := cStringPool.Get(title)
+	defer cStringPool.Release(str)
 	// NK_API nk_bool nk_button_text(struct nk_context*, const char *title, int len);
 	return bool(C.nk_button_text(ctx.raw(), str, C.int(len(title))))
 }
@@ -89,8 +89,8 @@ func (ctx *Context) ButtonTextBytes(title []byte) bool {
 // the end of the call. CheckText gets its initial state from active and returns
 // its current state.
 func (ctx *Context) CheckText(text string, active bool) bool {
-	str := C.CString(text)
-	defer C.free(unsafe.Pointer(str))
+	str := cStringPool.Get(text)
+	defer cStringPool.Release(str)
 	// nk_check_text(struct nk_context *ctx, const char *text, int len, nk_bool active)
 	return bool(C.nk_check_text(ctx.raw(), str, C.int(len(text)), C.nk_bool(active)))
 }

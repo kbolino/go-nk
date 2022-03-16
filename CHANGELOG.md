@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.10.1 (2022-03-16)
+
+- New feature: C-style strings can be pooled using the new `CStringPool`
+  interface and `SetCStringPool` function; the default implementation is no
+  different than previous behavior (copy/free a C-style string every with every
+  function call)
+
 ## v0.10.0 (2022-03-14)
 
 - Breaking API change: removed all specialized `XXXFlags` types, made their

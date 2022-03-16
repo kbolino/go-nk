@@ -74,8 +74,8 @@ func (a *FontAtlas) AddDefaultFont(height float32, config *FontConfig) *Font {
 // a non-nil error, or fails with a generic error message. The config parameter
 // may be nil.
 func (a *FontAtlas) AddFromFile(filePath string, height float32, config *FontConfig) (*Font, error) {
-	rawFilePath := C.CString(filePath)
-	defer C.free(unsafe.Pointer(rawFilePath))
+	rawFilePath := cStringPool.Get(filePath)
+	defer cStringPool.Release(rawFilePath)
 	// struct nk_font* nk_font_atlas_add_from_file(struct nk_font_atlas *atlas, const char *file_path,
 	//     float height, const struct nk_font_config*);
 	font := (*Font)(C.nk_font_atlas_add_from_file(a.raw(), rawFilePath, C.float(height),

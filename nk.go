@@ -39,7 +39,9 @@
 // Since Nuklear is at heart a C API and since cgo places restrictions on how
 // freely Go pointers can be passed to C, many types are allocated in C memory.
 // These types are explicitly noted in their documentation and need to be Free'd
-// after use. The best way to do this is to simply defer the Free call.
+// after use. The best way to do this is to simply defer the Free call. C-style
+// strings can be pooled using the SetCStringPool function, see its
+// documentation for more details.
 package nk
 
 // #include "nk.h"
