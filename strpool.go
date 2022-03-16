@@ -61,3 +61,11 @@ type defaultStringPool struct{}
 
 func (defaultStringPool) Get(s string) *C.char { return C.CString(s) }
 func (defaultStringPool) Release(cs *C.char)   { C.free(unsafe.Pointer(cs)) }
+
+// dummyStringPool is used for benchmarking only, to establish a baseline.
+type dummyStringPool struct{ cs *C.char }
+
+func (d *dummyStringPool) init(s string)        { d.cs = C.CString(s) }
+func (d *dummyStringPool) free()                { C.free(unsafe.Pointer(d.cs)) }
+func (d *dummyStringPool) Get(s string) *C.char { return d.cs }
+func (d *dummyStringPool) Release(cs *C.char)   {}
