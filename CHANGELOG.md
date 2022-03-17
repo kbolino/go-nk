@@ -1,6 +1,17 @@
 # Change Log
 
+## v0.13.0 (2022-03-17)
+
+- Minimum required Go version is now 1.18.
+- Removed `HandlePtr` and `GetHandlePtr` functions due to a
+  [bug in Go][golang-51733]. Instead, proper use of `Handle` for both C memory
+  and Go memory has been fully documented.
+
+[golang-51733]: https://github.com/golang/go/issues/51733
+
 ## v0.12.0 (2022-03-16)
+
+**RESCINDED RELEASE:** Use v0.13.0 or newer instead
 
 - Minimum required Go version is now 1.18
 - Added `HandlePtr` and `GetHandlePtr` generic functions to ergonomically and

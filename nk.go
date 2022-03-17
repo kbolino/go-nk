@@ -50,7 +50,6 @@ import "C"
 
 import (
 	"fmt"
-	"runtime/cgo"
 	"unsafe"
 )
 
@@ -134,21 +133,29 @@ func (ctx *Context) raw() *C.struct_nk_context {
 
 // typedef union {void *ptr; int id;} nk_handle;
 
-// Handle is used for opaque-to-nuklear references to externally created and
-// managed resources, such as textures. To obtain a handle from a Go pointer
-// that can be safely passed through C calls, use HandlePtr.
+// Handle is used for opaque references to externally created and managed
+// resources, outside of Nuklear's control, such as textures and user-data.
+//
+// Proper use of Handle when wrapping C memory pointers (e.g. graphics
+// driver-specific textures):
+//
+//	// to create the handle and pass it to C
+//	handleIn := nk.Handle(unsafe.Pointer(textureIn))
+//	// to recover the pointer after getting it back from C
+//	textureOut := (*TextureType)(unsafe.Pointer(handleOut))
+//
+// Proper use of Handle when wrapping Go memory types or pointers (e.g.
+// some user-data struct defined entirely in Go):
+//
+//	import "runtime/cgo"
+//	// to create the handle and pass it to C
+//	handleIn := nk.Handle(cgo.NewHandle(userDataIn))
+//	// to recover the pointer or value after getting it back from C
+//	userDataOut := cgo.Handle(handleOut).Value().(UserDataType)
+//
+// See the documentation for cgo.Handle as well, as each handle consumes
+// resources and should be deleted when no longer needed.
 type Handle uintptr
-
-// HandlePtr wraps ptr in a cgo-safe handle.
-func HandlePtr[T any](ptr *T) Handle {
-	return Handle(cgo.NewHandle(ptr))
-}
-
-// GetHandlePtr retrieves the pointer stored in the cgo-safe handle h. If h was
-// not obtained from HandlePtr, GetHandlePtr may panic.
-func GetHandlePtr[T any](h Handle) *T {
-	return cgo.Handle(h).Value().(*T)
-}
 
 func (h Handle) raw() C.nk_handle {
 	return *(*C.nk_handle)(unsafe.Pointer(&h))
