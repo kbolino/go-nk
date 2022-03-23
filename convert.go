@@ -5,6 +5,10 @@ package nk
 import "C"
 import "unsafe"
 
+// DefaultSegmentCount is the recommended number of segments for circles,
+// curves, and arcs.
+const DefaultSegmentCount = 22
+
 // enum nk_convert_result {
 //     NK_CONVERT_SUCCESS = 0,
 //     NK_CONVERT_INVALID_PARAM = 1,

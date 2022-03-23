@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.13.1 (2022-03-23)
+
+- Added `DefaultSegmentCount` constant
+
 ## v0.13.0 (2022-03-17)
 
 - Minimum required Go version is now 1.18.
