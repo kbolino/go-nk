@@ -1,5 +1,13 @@
 # Change Log
 
+## v0.15.1 (2022-03-25)
+
+- Added some layout utility methods to `Context`:
+   - `LayoutSetMinRowHeight`
+   - `LayoutResetMinRowHeight`
+   - `LayoutWidgetBounds`
+   - `LayoutRatioFromPixel`
+
 ## v0.15.0 (2022-03-25)
 
 - Breaking API change: Edit-related flags are now typed, types are `EditFlags`
@@ -8,7 +16,7 @@
 
 ## v0.14.1 (2022-03-25)
 
-- Added some more simple widgets:
+- Added some more simple widget methods to `Context`:
     - `OptionText`
     - `SlideFloat` and `SlideInt`
     - `Prog`

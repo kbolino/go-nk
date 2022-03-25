@@ -192,6 +192,14 @@ type Vec2i struct{ X, Y int16 }
 
 type Rect struct{ X, Y, W, H float32 }
 
+func rawRect(in C.struct_nk_rect) Rect {
+	return *(*Rect)(unsafe.Pointer(&in))
+}
+
+func (r Rect) raw() C.struct_nk_rect {
+	return *(*C.struct_nk_rect)(unsafe.Pointer(&r))
+}
+
 // struct nk_recti {short x,y,w,h;};
 
 type Recti struct{ X, Y, W, H int16 }
