@@ -1,5 +1,13 @@
 # Change Log
 
+## v0.14.1 (2022-03-25)
+
+- Added some more simple widgets:
+    - `OptionText`
+    - `SlideFloat` and `SlideInt`
+    - `Prog`
+    - `ColorPicker`
+
 ## v0.14.0 (2022-03-25)
 
 - Breaking API change: Removed `ScaleHeight` from `Font`, replaced with `Height`

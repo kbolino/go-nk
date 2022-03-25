@@ -157,6 +157,13 @@ func (h Handle) raw() C.nk_handle {
 	return *(*C.nk_handle)(unsafe.Pointer(&h))
 }
 
+type ColorFormat uint32
+
+const (
+	RGB  ColorFormat = C.NK_RGB
+	RGBA ColorFormat = C.NK_RGBA
+)
+
 // struct nk_color {nk_byte r,g,b,a;};
 
 type Color struct{ R, G, B, A uint8 }
@@ -164,6 +171,14 @@ type Color struct{ R, G, B, A uint8 }
 // struct nk_colorf {float r,g,b,a;};
 
 type Colorf struct{ R, G, B, A float32 }
+
+func rawColorf(in C.struct_nk_colorf) Colorf {
+	return *(*Colorf)(unsafe.Pointer(&in))
+}
+
+func (c Colorf) raw() C.struct_nk_colorf {
+	return *(*C.struct_nk_colorf)(unsafe.Pointer(&c))
+}
 
 // struct nk_vec2 {float x,y;};
 
