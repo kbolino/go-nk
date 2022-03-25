@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.15.0 (2022-03-25)
+
+- Breaking API change: Edit-related flags are now typed, types are `EditFlags`
+  for input flags and `EditEvents` for output flags
+- Added `EditString` widget method and associated `PluginFilter` type
+
 ## v0.14.1 (2022-03-25)
 
 - Added some more simple widgets:
