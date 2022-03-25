@@ -9,6 +9,29 @@ import (
 	"unsafe"
 )
 
+// UserFont is an opaque handle to a user-defined font. See the FontAtlas and
+// Font types for ways to obtain these handles.
+type UserFont C.struct_nk_user_font
+
+// Height returns the maximum height of the font.
+func (f *UserFont) Height() float32 {
+	return float32(f.height)
+}
+
+// SetHeight sets the maximum height of the font. This can be useful after
+// baking fonts to adjust their appearance.
+func (f *UserFont) SetHeight(height float32) {
+	f.height = C.float(height)
+}
+
+// Font is an opaque handle to a font in a font atlas.
+type Font C.struct_nk_font
+
+// Handle returns the UserFont handle for f.
+func (f *Font) Handle() *UserFont {
+	return (*UserFont)(&f.handle)
+}
+
 // enum nk_font_atlas_format {
 //     NK_FONT_ATLAS_ALPHA8,
 //     NK_FONT_ATLAS_RGBA32
@@ -21,25 +44,6 @@ const (
 	FontAtlasAlpha8 FontAtlasFormat = C.NK_FONT_ATLAS_ALPHA8
 	FontAtlasRGBA32 FontAtlasFormat = C.NK_FONT_ATLAS_RGBA32
 )
-
-// Font is an opaque handle to a font in a font atlas.
-type Font C.struct_nk_font
-
-// ScaleHeight re-scales the font according to scale. This can be useful for
-// rendering at high DPI. For effective use, first multiply the font size by
-// scale when calling AddXXX method, then ScaleHeight on the resulting Font,
-// then Bake the font(s). Values larger than 1 will make the font appear smaller
-// but crisper, values between 0 and 1 will make the font appear larger but
-// blurrier.
-func (f *Font) ScaleHeight(scale float32) {
-	// see discussion at https://github.com/Immediate-Mode-UI/Nuklear/pull/427
-	f.handle.height /= C.float(scale)
-}
-
-// Handle returns the UserFont handle for f.
-func (f *Font) Handle() *UserFont {
-	return (*UserFont)(&f.handle)
-}
 
 // FontAtlas is an opaque handle to the nk_font_atlas struct, which contains an
 // "atlas" of loaded fonts for baking. As with Context, the only safe way to

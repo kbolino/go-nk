@@ -1,5 +1,10 @@
 # Change Log
 
+## v0.14.0 (2022-03-25)
+
+- Breaking API change: Removed `ScaleHeight` from `Font`, replaced with `Height`
+  and `SetHeight` on `UserFont` to more closely match the C API
+
 ## v0.13.1 (2022-03-23)
 
 - Added `DefaultSegmentCount` constant

@@ -53,10 +53,6 @@ import (
 	"unsafe"
 )
 
-// UserFont is an opaque handle to a user-defined font. See the FontAtlas and
-// Font types for ways to obtain these handles.
-type UserFont C.struct_nk_user_font
-
 // Context is an opaque handle to nk_context, the entrypoint for Nuklear.
 // Always create a Context with NewContext, do not use a stack-allocated or
 // Go heap-allocated value.
